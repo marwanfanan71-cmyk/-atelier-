@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Carnet L'ATELIER</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.min.js"></script>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#d9480f">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+/* Layout: paper form on a steel ground, sticky tab bar, one column on phone */
+:root{
+  --bg:#e9ecee; --paper:#fbfbf9; --ink:#1d2327; --muted:#5d6870; --line:#c5ccd1;
+  --accent:#d9480f; --accent-ink:#fff; --ok:#2b8a3e; --warn:#b7791f; --bad:#c92a2a;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-body:"Barlow",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12171a; --paper:#1b2125; --ink:#e8ecee; --muted:#9aa5ac; --line:#354046;
+  --accent:#ff8a4c; --accent-ink:#1b1209; --ok:#69db7c; --warn:#ffd43b; --bad:#ff8787; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171a; --paper:#1b2125; --ink:#e8ecee; --muted:#9aa5ac; --line:#354046;
+  --accent:#ff8a4c; --accent-ink:#1b1209; --ok:#69db7c; --warn:#ffd43b; --bad:#ff8787; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.4;
+  padding-block:0 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:760px;margin:0 auto}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:12px 0 10px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+.brand{font-family:var(--f-display);font-weight:700;font-size:26px;letter-spacing:.02em;line-height:1}
+.brand small{display:block;font:600 11px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.tabs{display:flex;gap:4px;background:var(--line);padding:3px;border-radius:8px}
+.tabs button{border:0;background:transparent;color:var(--ink);font:600 14px var(--f-body);padding:8px 14px;border-radius:6px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--paper);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sheet{background:var(--paper);border-radius:4px;border-top:4px solid var(--ink);padding:18px 16px 22px;display:grid;gap:16px;box-shadow:0 1px 0 var(--line)}
+.sheet-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:12px}
+.sheet-head h1{font:700 30px/1 var(--f-display);margin:0;letter-spacing:.01em;text-wrap:balance}
+.ids{display:flex;gap:10px;flex-wrap:wrap}
+.ids label{display:grid;gap:2px;font:600 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ids input{width:96px;font:500 15px var(--f-mono);color:var(--ink)}
+.box{border:1px solid var(--line);border-radius:6px;padding:12px;display:grid;gap:12px;min-width:0}
+.box h2{margin:0;font:700 15px var(--f-display);letter-spacing:.12em;text-transform:uppercase}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.two{grid-template-columns:1fr}}
+.fld{display:grid;gap:3px;min-width:0}
+.fld>span{font:600 11px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+input[type=text],input[type=date],textarea,.ids input{width:100%;background:transparent;color:var(--ink);border:0;border-bottom:1.5px dashed var(--line);border-radius:0;padding:7px 2px;font:inherit;min-width:0}
+input[type=text]:focus,input[type=date]:focus,textarea:focus,.ids input:focus{outline:none;border-bottom:1.5px solid var(--accent)}
+textarea{min-height:110px;resize:vertical;border:1.5px dashed var(--line);border-radius:6px;padding:9px}
+.checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.chk{position:relative}
+.chk input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.chk span{display:flex;align-items:center;gap:9px;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-weight:500}
+.chk span::before{content:"";width:18px;height:18px;border:2px solid var(--ink);border-radius:3px;flex:none}
+.chk input:checked+span{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.chk input:checked+span::before{background:var(--accent);border-color:var(--accent);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3L13 4.5' fill='none' stroke='white' stroke-width='2.4'/%3E%3C/svg%3E");background-size:100%}
+.chk input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.parts{border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.prow{display:grid;grid-template-columns:1fr 70px 40px;border-top:1px solid var(--line)}
+.prow:first-child{border-top:0}
+.prow.h{background:var(--bg);font:700 12px var(--f-display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.prow.h div{padding:8px 10px}
+.prow input{border:0;border-radius:0;padding:11px 10px}
+.prow input+input{border-left:1px solid var(--line)}
+.prow button{border:0;border-left:1px solid var(--line);background:transparent;color:var(--muted);font-size:18px;cursor:pointer}
+.btn{font:600 14px var(--f-body);border-radius:6px;padding:11px 16px;cursor:pointer;border:1.5px solid var(--ink);background:transparent;color:var(--ink);min-height:44px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.sm{padding:6px 12px;min-height:36px;font-size:13px}
+.btn.danger{border-color:var(--bad);color:var(--bad)}
+.sigs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.sigs{grid-template-columns:1fr}}
+.sig{display:grid;gap:6px}
+.sig canvas{background:#fff;width:100%;aspect-ratio:3/1;border:1px solid var(--line);border-radius:6px;background:transparent;touch-action:none;cursor:crosshair}
+.sig .row{display:flex;justify-content:space-between;align-items:center}
+.sig .row span{font:700 12px var(--f-display);letter-spacing:.12em;text-transform:uppercase}
+.sig .row button{border:0;background:none;color:var(--muted);font:500 13px var(--f-body);text-decoration:underline;cursor:pointer}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.foot{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:6px;font-weight:600;z-index:20;max-width:90vw}
+/* Carnet */
+.list{display:grid;gap:10px}
+.item{background:var(--paper);border-radius:6px;border:1px solid var(--line);padding:12px;display:grid;gap:8px;border-left:5px solid var(--muted)}
+.item[data-etat="Opérationnelle"]{border-left-color:var(--ok)}
+.item[data-etat="En attente de pièces"]{border-left-color:var(--warn)}
+.item[data-etat="Hors service"]{border-left-color:var(--bad)}
+.item .t{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.item .n{font:500 13px var(--f-mono)}
+.item h3{margin:0;font:700 19px var(--f-display);letter-spacing:.01em}
+.item p{margin:0;color:var(--muted);font-size:14px;overflow-wrap:anywhere}
+.pill{font:700 11px var(--f-body);letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:99px;border:1.5px solid currentColor}
+.pill.ok{color:var(--ok)}.pill.warn{color:var(--warn)}.pill.bad{color:var(--bad)}.pill.na{color:var(--muted)}
+.empty{text-align:center;padding:40px 16px;color:var(--muted);background:var(--paper);border-radius:6px}
+.summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.summary .pill{background:var(--paper)}
+.filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.filters input{flex:1;min-width:160px;border:1px solid var(--line);border-radius:6px;padding:10px;background:var(--paper)}
+@media(prefers-reduced-motion:no-preference){.toast{animation:up .2s ease-out}@keyframes up{from{opacity:0;transform:translate(-50%,8px)}}}
+</style>
+
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">L'ATELIER<small>Services techniques — Maintenance interne</small></div>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tabForm" aria-selected="true">Nouvelle fiche</button>
+      <button role="tab" id="tabList" aria-selected="false">Carnet (<span id="count">0</span>)</button>
+    </div>
+  </header>
+  <p class="foot" id="mode" style="margin:0 0 10px" role="status">Chargement du carnet…</p>
+
+  <main id="viewForm">
+    <form class="sheet" id="f" autocomplete="off">
+      <div class="sheet-head">
+        <h1>Rapport d'intervention interne</h1>
+        <div class="ids">
+          <label for="carnet">Carnet N°<input id="carnet" type="text" inputmode="numeric" value="1"></label>
+          <label for="fiche">Fiche N°<input id="fiche" type="text" readonly></label>
+          <label for="date">Date<input id="date" type="date" style="width:140px"></label>
+        </div>
+      </div>
+
+      <section class="box">
+        <h2>Localisation &amp; Département</h2>
+        <div class="checks" id="locs"></div>
+        <label class="fld"><span>Demandeur</span><input type="text" id="demandeur"></label>
+      </section>
+
+      <section class="box">
+        <h2>Équipement &amp; Intervenant</h2>
+        <label class="fld"><span>Machine / Équipement</span><input type="text" id="machine"></label>
+        <div class="two">
+          <label class="fld"><span>Code / N° Série</span><input type="text" id="code"></label>
+          <label class="fld"><span>Technicien</span><input type="text" id="tech"></label>
+        </div>
+      </section>
+
+      <section class="box">
+        <h2>Type d'intervention</h2>
+        <div class="checks" id="types"></div>
+      </section>
+
+      <section class="box">
+        <h2>Description &amp; travaux réalisés</h2>
+        <textarea id="desc" aria-label="Description et travaux réalisés"></textarea>
+      </section>
+
+      <section class="box">
+        <h2>Pièces remplacées</h2>
+        <div class="parts" id="parts"></div>
+        <div><button type="button" class="btn sm" id="addPart">+ Ajouter une pièce</button></div>
+      </section>
+
+      <section class="box">
+        <h2>État de la machine après intervention</h2>
+        <div class="checks" id="etats"></div>
+      </section>
+
+      <div class="sigs">
+        <div class="sig"><div class="row"><span>Signature Technicien</span><button type="button" data-clear="sigTech">Effacer</button></div><canvas id="sigTech" width="600" height="200"></canvas></div>
+        <div class="sig"><div class="row"><span>Validation Chef d'Atelier / Resp. Maintenance</span><button type="button" data-clear="sigChef">Effacer</button></div><canvas id="sigChef" width="600" height="200"></canvas></div>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn primary">Enregistrer la fiche</button>
+        <button type="button" class="btn" id="reset">Nouvelle fiche vierge</button>
+      </div>
+      <div class="foot"><span>L'ATELIER Maintenance Interne — Carnet Souche (100 fiches)</span><span id="footFiche"></span></div>
+    </form>
+  </main>
+
+  <main id="viewList" hidden>
+    <div class="summary" id="summary"></div>
+    <div class="filters"><input type="text" id="q" placeholder="Rechercher machine, technicien, département…" aria-label="Rechercher"></div>
+    <div class="list" id="list"></div>
+  </main>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+var LOCS=["Chocolatier","Pâtisserie Marocaine","Labo Cuisson","Boulangerie","Pesée","Cuisine Froide","Labo Tour","Pâtisserie","Cuisine Chaude"];
+var TYPES=["Préventive","Curative (Panne)","Installation","Autre"];
+var ETATS=["Opérationnelle","En attente de pièces","Hors service"];
+var KEY="latelier-carnet-v1";
+var $=function(s){return document.querySelector(s)};
+var records=[];var editingId=null;
+
+var canWrite=true;
+var SB_URL="https://eiuiruajvkzmoefnkpsq.supabase.co";
+var SB_KEY="sb_publishable_132HjmzRQSULLW_0Lzz9JA_qOuV8Pj2";
+var sb=null;
+try{sb=window.supabase.createClient(SB_URL,SB_KEY)}catch(e){sb=null}
+function must(p){return p.then(function(r){if(r.error)throw r.error;return r.data})}
+function fromRow(w){return Object.assign({},w.data,{id:w.id,fiche:w.fiche,carnet:w.carnet})}
+function saveRec(r){
+  if(!sb)return Promise.reject(new Error("no-sb"));
+  var p=r.id
+    ? sb.from("fiches").update({carnet:String(r.carnet),data:r}).eq("id",r.id).select().single()
+    : sb.from("fiches").insert({carnet:String(r.carnet),data:r}).select().single();
+  return must(p).then(function(row){r.id=row.id;r.fiche=row.fiche;return refresh()});
+}
+function delRec(id){return must(sb.from("fiches").delete().eq("id",id)).then(refresh)}
+function refresh(){
+  return must(sb.from("fiches").select("*").order("carnet").order("fiche")).then(function(rows){
+    records=rows.map(fromRow);sortRecords();
+    if(!editingId){$("#fiche").dataset.n=nextFiche();updateFicheLabel()}
+    renderList();
+  });
+}
+function pad(n){return String(n).padStart(3,"0")}
+function sortRecords(){records.sort(function(a,b){var c=(parseInt(a.carnet,10)||0)-(parseInt(b.carnet,10)||0);return c||(a.fiche-b.fiche)})}
+function toast(m){var t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(function(){t.hidden=true},2200)}
+function pad(n){return String(n).padStart(3,"0")}
+function today(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function fmtDate(s){if(!s)return"—";var p=s.split("-");return p[2]+"/"+p[1]+"/"+p[0]}
+
+function buildChecks(id,items,name,radio){
+  $(id).innerHTML=items.map(function(x,i){
+    return '<label class="chk"><input type="'+(radio?"radio":"checkbox")+'" name="'+name+'" value="'+esc(x)+'"><span>'+esc(x)+'</span></label>';
+  }).join("");
+}
+buildChecks("#locs",LOCS,"loc");buildChecks("#types",TYPES,"type");buildChecks("#etats",ETATS,"etat",true);
+
+/* parts */
+function renderParts(rows){
+  var h='<div class="prow h"><div>Désignation / Réf.</div><div>Qté</div><div></div></div>';
+  rows.forEach(function(r,i){
+    h+='<div class="prow"><input type="text" data-k="d" aria-label="Désignation pièce '+(i+1)+'" value="'+esc(r.d)+'"><input type="text" inputmode="numeric" data-k="q" aria-label="Quantité pièce '+(i+1)+'" value="'+esc(r.q)+'"><button type="button" data-del="'+i+'" aria-label="Supprimer la ligne">×</button></div>';
+  });
+  $("#parts").innerHTML=h;
+}
+function readParts(){
+  var out=[];document.querySelectorAll("#parts .prow:not(.h)").forEach(function(r){
+    var d=r.querySelector('[data-k="d"]').value.trim(),q=r.querySelector('[data-k="q"]').value.trim();
+    out.push({d:d,q:q});});return out;
+}
+$("#addPart").onclick=function(){var r=readParts();r.push({d:"",q:""});renderParts(r);var ins=document.querySelectorAll('#parts [data-k="d"]');ins[ins.length-1].focus()};
+$("#parts").onclick=function(e){var b=e.target.closest("[data-del]");if(!b)return;var r=readParts();r.splice(+b.dataset.del,1);if(!r.length)r=[{d:"",q:""}];renderParts(r)};
+
+/* signatures */
+var sigs={};
+function initSig(id){
+  var c=document.getElementById(id),x=c.getContext("2d"),drawing=false,dirty=false;
+  function ink(){return getComputedStyle(document.body).color}
+  function pos(e){var r=c.getBoundingClientRect();return{x:(e.clientX-r.left)*c.width/r.width,y:(e.clientY-r.top)*c.height/r.height}}
+  c.addEventListener("pointerdown",function(e){drawing=true;dirty=true;c.setPointerCapture(e.pointerId);var p=pos(e);x.strokeStyle="#1d2327";x.lineWidth=3;x.lineCap="round";x.lineJoin="round";x.beginPath();x.moveTo(p.x,p.y);x.lineTo(p.x+.1,p.y+.1);x.stroke();e.preventDefault()});
+  c.addEventListener("pointermove",function(e){if(!drawing)return;var p=pos(e);x.lineTo(p.x,p.y);x.stroke()});
+  ["pointerup","pointercancel"].forEach(function(t){c.addEventListener(t,function(){drawing=false})});
+  sigs[id]={
+    clear:function(){x.clearRect(0,0,c.width,c.height);dirty=false},
+    data:function(){if(!dirty)return"";var t=document.createElement("canvas");t.width=450;t.height=150;var g=t.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,450,150);g.drawImage(c,0,0,450,150);return t.toDataURL("image/jpeg",0.6)},
+    set:function(u){x.clearRect(0,0,c.width,c.height);dirty=false;if(!u)return;var im=new Image();im.onload=function(){x.drawImage(im,0,0,c.width,c.height);dirty=true};im.src=u}
+  };
+}
+initSig("sigTech");initSig("sigChef");
+document.querySelectorAll("[data-clear]").forEach(function(b){b.onclick=function(){sigs[b.dataset.clear].clear()}});
+
+/* form state */
+function checkedVals(name){return Array.prototype.map.call(document.querySelectorAll('input[name="'+name+'"]:checked'),function(i){return i.value})}
+function setChecked(name,vals){document.querySelectorAll('input[name="'+name+'"]').forEach(function(i){i.checked=vals.indexOf(i.value)>-1})}
+function nextFiche(){
+  var c=$("#carnet").value.trim()||"1";
+  return records.reduce(function(m,r){return String(r.carnet)===c?Math.max(m,parseInt(r.fiche,10)||0):m},0)+1;
+}
+function updateFicheLabel(){$("#fiche").value=$("#fiche").dataset.n?pad($("#fiche").dataset.n)+"/100":"";$("#footFiche").textContent="Fiche N° "+$("#fiche").value}
+function blank(){
+  editingId=null;$("#f").reset();
+  $("#date").value=today();
+  var last=records.length?records[records.length-1].carnet:"1";$("#carnet").value=last;
+  $("#fiche").dataset.n=nextFiche();updateFicheLabel();
+  $("#parts").innerHTML="";renderParts([{d:"",q:""},{d:"",q:""}]);
+  sigs.sigTech.clear();sigs.sigChef.clear();
+}
+function collect(){
+  return{id:editingId||"",fiche:+$("#fiche").dataset.n,carnet:$("#carnet").value.trim()||"1",date:$("#date").value,
+    loc:checkedVals("loc"),demandeur:$("#demandeur").value.trim(),machine:$("#machine").value.trim(),code:$("#code").value.trim(),tech:$("#tech").value.trim(),
+    types:checkedVals("type"),desc:$("#desc").value.trim(),parts:readParts().filter(function(p){return p.d||p.q}),
+    etat:checkedVals("etat")[0]||"",sigTech:sigs.sigTech.data(),sigChef:sigs.sigChef.data(),savedAt:Date.now()};
+}
+function fill(r){
+  editingId=r.id;$("#carnet").value=r.carnet;$("#fiche").dataset.n=r.fiche;updateFicheLabel();$("#date").value=r.date||"";
+  setChecked("loc",r.loc||[]);setChecked("type",r.types||[]);setChecked("etat",r.etat?[r.etat]:[]);
+  $("#demandeur").value=r.demandeur||"";$("#machine").value=r.machine||"";$("#code").value=r.code||"";$("#tech").value=r.tech||"";$("#desc").value=r.desc||"";
+  renderParts(r.parts&&r.parts.length?r.parts:[{d:"",q:""}]);
+  sigs.sigTech.set(r.sigTech);sigs.sigChef.set(r.sigChef);
+}
+$("#f").addEventListener("submit",function(e){
+  e.preventDefault();
+  if(!canWrite){toast("Tu peux lire le carnet mais pas écrire dedans");return}
+  var r=collect();
+  if(!r.machine&&!r.desc){toast("Indique au moins la machine ou la description");return}
+  var btn=$("#f button[type=submit]");btn.disabled=true;
+  var go=Promise.resolve();
+  go.then(function(){return saveRec(r)}).then(function(){
+    btn.disabled=false;toast("Fiche "+pad(r.fiche)+"/100 enregistrée");
+    if(!db){renderList()}
+    blank();showTab("list");
+  },function(){btn.disabled=false;toast("Enregistrement impossible, réessaie")});
+});
+$("#carnet").addEventListener("input",function(){if(!editingId){$("#fiche").dataset.n=nextFiche();updateFicheLabel()}});
+$("#reset").onclick=function(){blank();window.scrollTo(0,0)};
+
+/* list */
+function pillFor(etat){var c={"Opérationnelle":"ok","En attente de pièces":"warn","Hors service":"bad"}[etat]||"na";return '<span class="pill '+c+'">'+esc(etat||"État non précisé")+"</span>"}
+function textOf(r){
+  return ["RAPPORT D'INTERVENTION INTERNE — L'ATELIER","Carnet N° "+r.carnet+" | Fiche N° "+pad(r.fiche)+"/100 | Date : "+fmtDate(r.date),
+  "Département : "+(r.loc.join(", ")||"—"),"Demandeur : "+(r.demandeur||"—"),"Machine : "+(r.machine||"—"),"Code / N° Série : "+(r.code||"—"),"Technicien : "+(r.tech||"—"),
+  "Type : "+(r.types.join(", ")||"—"),"Travaux : "+(r.desc||"—"),
+  "Pièces : "+(r.parts.length?r.parts.map(function(p){return p.d+(p.q?" x"+p.q:"")}).join("; "):"aucune"),"État après intervention : "+(r.etat||"—")].join("\n");
+}
+function renderList(){
+  $("#count").textContent=records.length;
+  var q=$("#q").value.trim().toLowerCase();
+  var rows=records.slice().reverse().filter(function(r){return !q||(r.machine+" "+r.tech+" "+r.demandeur+" "+r.desc+" "+r.loc.join(" ")+" "+r.code).toLowerCase().indexOf(q)>-1});
+  var c={op:0,att:0,hs:0};records.forEach(function(r){if(r.etat==="Opérationnelle")c.op++;else if(r.etat==="En attente de pièces")c.att++;else if(r.etat==="Hors service")c.hs++});
+  $("#summary").innerHTML='<span class="pill ok">'+c.op+" opérationnelle"+(c.op>1?"s":"")+'</span><span class="pill warn">'+c.att+' en attente de pièces</span><span class="pill bad">'+c.hs+" hors service</span>";
+  if(!rows.length){$("#list").innerHTML='<div class="empty">'+(records.length?"Aucune fiche ne correspond à la recherche.":"Le carnet est vide. Remplis la première fiche, elle apparaîtra ici.")+"</div>";return}
+  $("#list").innerHTML=rows.map(function(r){
+    return '<article class="item" data-etat="'+esc(r.etat)+'"><div class="t"><span class="n">Fiche '+pad(r.fiche)+"/100 · Carnet "+esc(r.carnet)+" · "+fmtDate(r.date)+"</span>"+pillFor(r.etat)+"</div>"+
+    "<h3>"+esc(r.machine||"Machine non précisée")+"</h3>"+
+    "<p>"+esc(r.loc.join(", ")||"Département —")+" · "+esc(r.types.join(", ")||"Type —")+" · Technicien : "+esc(r.tech||"—")+"</p>"+
+    (r.desc?"<p>"+esc(r.desc.length>160?r.desc.slice(0,160)+"…":r.desc)+"</p>":"")+
+    '<div class="actions"><button class="btn sm" data-open="'+r.id+'">Ouvrir / modifier</button><button class="btn sm" data-copy="'+r.id+'">Copier le texte</button><button class="btn sm danger" data-del="'+r.id+'">Supprimer</button></div></article>';
+  }).join("");
+}
+$("#q").oninput=renderList;
+$("#list").onclick=function(e){
+  var b=e.target.closest("button");if(!b)return;
+  if(b.dataset.open){var r=records.find(function(x){return x.id===b.dataset.open});fill(r);showTab("form");window.scrollTo(0,0)}
+  else if(b.dataset.copy){var r2=records.find(function(x){return x.id===b.dataset.copy});
+    var done=function(){toast("Texte copié")};
+    try{navigator.clipboard.writeText(textOf(r2)).then(done,function(){toast("Copie refusée par le navigateur")})}catch(err){toast("Copie refusée par le navigateur")}}
+  else if(b.dataset.del){
+    if(b.dataset.armed){delRec(b.dataset.del).then(function(){if(!db)renderList();toast("Fiche supprimée")},function(){toast("Suppression refusée")})}
+    else{b.dataset.armed="1";b.textContent="Confirmer la suppression";setTimeout(function(){if(b.isConnected){delete b.dataset.armed;b.textContent="Supprimer"}},3000)}}
+};
+
+/* tabs */
+function showTab(t){
+  var f=t==="form";$("#viewForm").hidden=!f;$("#viewList").hidden=f;
+  $("#tabForm").setAttribute("aria-selected",f);$("#tabList").setAttribute("aria-selected",!f);
+  if(!f)renderList();
+}
+$("#tabForm").onclick=function(){showTab("form")};$("#tabList").onclick=function(){showTab("list")};
+
+blank();renderList();
+function setMode(t){$("#mode").textContent=t}
+if(!sb||SB_URL.indexOf("COLLE_ICI")===0){
+  setMode("Configuration manquante : colle l'URL et la clé Supabase en haut du script");
+}else{
+  setMode("Chargement du carnet…");
+  refresh().then(function(){
+    setMode("Carnet partagé : synchronisé entre tous les appareils");
+    try{sb.channel("fiches-live").on("postgres_changes",{event:"*",schema:"public",table:"fiches"},function(){refresh().catch(function(){})}).subscribe()}catch(e){}
+  },function(){setMode("Carnet injoignable : vérifie la connexion et la configuration Supabase")});
+  setInterval(function(){refresh().catch(function(){})},60000);
+}
+})();
+</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}</script>
+</body></html>
