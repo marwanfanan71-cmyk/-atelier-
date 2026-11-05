@@ -166,7 +166,7 @@ textarea{min-height:110px;resize:vertical;border:1.5px dashed var(--line);border
 
       <div class="actions">
         <button type="submit" class="btn primary">Enregistrer la fiche</button>
-        <button type="button" class="btn" id="reset">Nouvelle fiche vierge</button>
+        <button type="button" class="btn" id="btnNew">Nouvelle fiche vierge</button>
       </div>
       <div class="foot"><span>L'ATELIER Maintenance Interne — Carnet Souche (100 fiches)</span><span id="footFiche"></span></div>
     </form>
@@ -303,7 +303,7 @@ $("#f").addEventListener("submit",function(e){
   },function(){btn.disabled=false;toast("Enregistrement impossible, réessaie")});
 });
 $("#carnet").addEventListener("input",function(){if(!editingId){$("#fiche").dataset.n=nextFiche();updateFicheLabel()}});
-$("#reset").onclick=function(){blank();window.scrollTo(0,0)};
+$("#btnNew").onclick=function(){blank();window.scrollTo(0,0)};
 
 /* list */
 function pillFor(etat){var c={"Opérationnelle":"ok","En attente de pièces":"warn","Hors service":"bad"}[etat]||"na";return '<span class="pill '+c+'">'+esc(etat||"État non précisé")+"</span>"}
